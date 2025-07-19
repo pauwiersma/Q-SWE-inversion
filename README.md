@@ -1,21 +1,18 @@
-# Q-SWE Inversion
+# Code accompanying "Can streamflow constrain snow mass reconstruction? Lessons from two synthetic experiments"
 
-This repository contains scripts for hydrological modeling and analysis, specifically focused on Snow Water Equivalent (SWE) and discharge (Q) inversion using the wflow hydrological model. The codebase is designed for calibration, evaluation, and analysis of hydrological models with a particular emphasis on snow processes.
+This repository contains scientific code and is not actively maintained. The compilation of the correct hydrological model version and python packages is not straightforward, if you're interested in reproducing the experiments using the code presented here, please contact me at pauwiersma@outlook.com. 
+If you're interested in reproducing the experiments with your own snow and runoff models, we refer to the Zenodo repository for the necessary data: 10.5281/zenodo.16146617. 
 
 ## Overview
 
-This project implements a comprehensive hydrological modeling framework that:
-- Calibrates hydrological models using both discharge and SWE observations
-- Performs synthetic experiments to test model performance
-- Analyzes model outputs using various hydrological signatures and metrics
+This project implements a streamflow-constrained SWE reconstruction framework that:
+- Prepares all necessary input data and loads the wflow_sbm hydrological model for a catchment of choice
+- Reads a config file containing all necessary model parameters to initialize the model
+- Performs repeated model executions with different parameter sets sampled using different algorithms from the SPOTPY package
+- Compares against observed streamflow and SWE observations, analyzes results and produces plots
 - Supports both local and cluster-based computations
 
 ## Main Scripts
-
-### Core Execution Scripts
-
-- **`main.py`** - Main execution script that orchestrates the entire workflow including preprocessing, soil computation, yearly computation, and postprocessing
-- **`main_old.py`** - Previous version of the main execution script (deprecated)
 
 ### Preprocessing and Setup
 
@@ -26,7 +23,6 @@ This project implements a comprehensive hydrological modeling framework that:
 ### Model Execution
 
 - **`RunWflow_Julia.py`** - Executes the wflow hydrological model using Julia backend
-- **`wflow_julia_calibration.py`** - Handles wflow model calibration using Julia
 - **`LOA.py`** - Large-scale analysis class for processing and analyzing model outputs
 
 ### Computation Scripts
@@ -55,10 +51,6 @@ This project implements a comprehensive hydrological modeling framework that:
 - **`Postruns.py`** - Handles post-run analysis and processing
 - **`SwissStations.py`** - Processes Swiss meteorological station data
 - **`SnowClass.py`** - Snow classification and processing utilities
-
-### Graphics and Visualization
-
-- **`Graphics.py`** - Visualization utilities for plotting results
 
 ## Utility Scripts (`utils/` directory)
 
@@ -93,29 +85,7 @@ Contains various bash scripts for:
 - Yearly calibration
 - spotpy settings and execution
 - Parallel processing configurations
-
-## Key Features
-
-1. **Multi-objective Calibration**: Supports calibration on both discharge and SWE observations
-2. **Synthetic Experiments**: Framework for testing with synthetic data
-3. **Parallel Processing**: Supports both local and cluster-based parallel computation
-4. **Comprehensive Metrics**: Implements various hydrological signatures and performance metrics
-5. **Flexible Configuration**: JSON-based configuration system for easy experiment setup
-6. **Multiple Algorithms**: Supports various calibration algorithms (LHS, ROPE, MC, DDS)
-
-## Usage
-
-1. Set up environment variables:
-   - `EWC_ROOTDIR`: Root directory for data
-   - `EWC_RUNDIR`: Runtime directory
-
-2. Configure experiment parameters in `preproc.py`
-
-3. Run the main execution script:
-   ```bash
-   python main.py
-   ```
-
+  
 ## Dependencies
 
 The codebase requires various Python packages including:
@@ -126,7 +96,6 @@ The codebase requires various Python packages including:
 - wflow (Julia backend)
 - Various hydrological modeling libraries
 
-## Notes
 
 - This repository is designed for research purposes in hydrological modeling
 - The code supports both synthetic and real-world experiments
