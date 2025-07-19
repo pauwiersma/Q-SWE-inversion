@@ -1,0 +1,95 @@
+---
+name: ewatercycle
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  # TODO pin versions for reproducibility. Use `conda env export` and `pip list` to get versions
+  - python=3.10
+  - esmpy==8.3.1  # For juliacall compatibility
+  - fiona==1.9.1  # For juliacall compatibility
+  - netcdf4==1.6.2  # For juliacall compatibility
+  - esmvaltool-python>=2.3.0
+  - ansible
+  - pip:
+      - ewatercycle
+      - ewatercycle-hype
+      - ewatercycle-lisflood
+      - ewatercycle-marrmot
+      - ewatercycle-pcrglobwb
+      - ewatercycle-wflow
+      - ewatercycle-leakybucket
+      - ewatercycle-wflowjl
+      # TODO Once available uncomment the following line and remove the git+https line
+      # - ewatercycle-sfincs
+      - git+https://github.com/eWaterCycle/ewatercycle-sfincs
+      - era5cli
+      # For using ewatercycle-wflowjl
+      # pyjuliapkg fork that accepts ~
+      - git+https://github.com/eWaterCycle/pyjuliapkg@expanduser
+      - juliacall==0.9.14
+      - git+https://github.com/pauwiersma/spotpy.git
+  - setuptools
+  - altair_saver
+  - altair
+  - dask-jobqueue
+  - distributed
+  - geoviews
+  - hydrostats
+  - nco
+  - ncview
+  - regionmask
+  - pyke  # required by iris, only available on conda or sourceforge
+  - iris-sample-data # for sample notebooks, see https://github.com/eWaterCycle/notebooks/issues/15
+  # Pangeo deps, see https://pangeo.io/setup_guides/hpc.html
+  - zarr
+  - hvplot
+  - numcodecs
+  # Lint / formatters
+  - autopep8
+  - black
+  - flake8
+  - isort
+  - pylint
+  - yapf
+  # Pymt
+  - pymt_cem
+  - pymt_ecsimplesnow
+  - pymt_gipl
+  - pymt_hydrotrend
+  - pymt_landlab
+  - pymt_permamodel
+  - pymt_rafem
+  - pymt_sedflux
+  - pymt
+  # - pymt_child  # Skipped as only a osx binary is available
+  # - pymt_topoflow  # Skipped not on conda-forge
+  # Jupyter
+  - jupyter-server-proxy
+  - jupyterhub
+  - jupyterlab # Version pinned due to not all wanted extensions support v3
+  - notebook
+  - ipykernel
+  - ipympl
+  - ipynb-py-convert
+  - jupyterhub-idle-culler
+  - jupyterhub-systemdspawner
+  # JupyterLab extensions server dependencies, lab extension should be added to defaults of jupyter role
+  - ipyleaflet
+  - jupyterlab_code_formatter
+  - dask-labextension
+  - jupyterlab-geojson
+  - jupyter_bokeh
+  - pyviz_comms
+  - jupyterlab-git
+  - nbdime
+  - nbgitpuller
+  - papermill
+  # For pwiersma's scripts
+  - rioxarray
+  - HydroErr
+  - geopandas
+  - tomlkit
+  - seaborn
+  - flexitext
+  #+ WflowJl package from https://github.com/pauwiersma/Wflow.jl.git

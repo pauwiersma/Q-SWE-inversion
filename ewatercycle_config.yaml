@@ -1,0 +1,7 @@
+# apptainer_dir: /var/snap/docker/common/var-lib-docker
+container_engine: docker
+#grdc_location: None
+# output_dir: /work/FAC/FGSE/IDYST/gmariet1/gaia/pwiersma/ewatercycle/experiments/ewc_outputs
+output_dir: /home/pwiersma/scratch/data/ewatercycle/experiments/ewc_outputs
+#parameter_sets: {}
+#parameterset_dir: None

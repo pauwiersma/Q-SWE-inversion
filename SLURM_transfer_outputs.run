@@ -1,0 +1,49 @@
+#!/bin/bash -l
+#SBATCH --job-name=transfer_outputs
+#SBATCH --output=./slurm_output/%x_%A_%a.out
+#SBATCH --error=./slurm_errors/%x_%A_%a.err
+#SBATCH --time=12:00:00
+#SBATCH --mem=32G
+#SBATCH --partition=cpu
+#SBATCH --nodes 1
+#SBATCH --cpus-per-task=1
+
+
+# This script is used to transfer the output files from the cluster to the local machine
+
+# Variables
+BASIN=$1
+RUN_ID=$2
+SOURCE_FOLDER="$EWC_ROOTDIR/outputs/$RUN_ID"
+TAR_FILE="$EWC_ROOTDIR/outputs/$RUN_ID.tar.gz"
+REMOTE_USER="pwiersma"
+REMOTE_HOST="mercury.gaia.unil.ch"
+REMOTE_PATH="/home/pwiersma/scratch/Data/ewatercycle"
+CONTAINER_DIR=$EWC_ROOTDIR"/experiments/containers/"$RUN_ID
+
+# Create a tar.gz archive of the source folder
+echo "Creating archive: $TAR_FILE"
+tar -czf "$TAR_FILE" -C "$SOURCE_FOLDER" .
+
+# Transfer the tar.gz file to the remote machine
+echo "Transferring archive to $REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH/outputs"
+scp "$TAR_FILE" "$REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH/outputs"
+
+# Extract the tar.gz file on the remote machine
+# ssh "$REMOTE_USER@$REMOTE_HOST" "cd $REMOTE_PATH/outputs && tar -xzf $RUN_ID.tar.gz && rm $RUN_ID.tar.gz"
+ssh "$REMOTE_USER@$REMOTE_HOST" "mkdir -p $REMOTE_PATH/outputs/$RUN_ID && tar -xzf $REMOTE_PATH/outputs/$RUN_ID.tar.gz -C $REMOTE_PATH/outputs/$RUN_ID && rm $REMOTE_PATH/outputs/$RUN_ID.tar.gz"
+
+# Clean up the local tar.gz file
+echo "Removing local archive: $TAR_FILE"
+rm "$TAR_FILE"
+
+# Remove most forcing files and transfer container forcing to mercury
+echo "Cleaning up container directory: $CONTAINER_DIR"
+rm -r "$CONTAINER_DIR"/*prior* "$CONTAINER_DIR"/*posterior* "$CONTAINER_DIR"/*sample*
+
+echo "Transferring container directory to $REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH/experiments/containers"
+scp -r "$CONTAINER_DIR" "$REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH/experiments/containers"
+
+# Copying config file to remote machine
+echo "Transferring config file to $REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH/experiments"
+scp $EWC_ROOTDIR"/experiments/config_files/"$RUN_ID"_config.json" "$REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH/experiments/config_files" 

@@ -1,0 +1,36 @@
+#!/bin/bash -l
+#SBATCH --job-name=master_slurm
+#SBATCH --output=./slurm_output/master_slurm.out
+#SBATCH --error=./slurm_errors/master_slurm.err
+#SBATCH --time=00:01:00
+#SBATCH --mem=1024M
+#SBATCH --partition=cpu
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=1
+
+BASIN=$1
+RUN_ID=$2
+TEST_FLAG=$3
+
+# Submit the first job and capture its job ID
+job_id1=$(sbatch --parsable SLURM_preproc.run $BASIN $RUN_ID $TEST_FLAG)
+
+# Submit the second job with a dependency on the first job
+job_id2=$(sbatch --dependency=afterok:$job_id1 --parsable SLURM_soil_compute.run $BASIN $RUN_ID $TEST_FLAG)
+
+# Submit the third job with a dependency on the second job
+job_id3=$(sbatch --dependency=afterok:$job_id2 --parsable SLURM_soil_postproc.run $BASIN $RUN_ID $TEST_FLAG)
+
+# Submit the fourth job with a dependency on the third job
+job_id4=$(sbatch --dependency=afterok:$job_id3 --parsable SLURM_yearly_compute.run $BASIN $RUN_ID $TEST_FLAG)
+
+# Submit the fifth job with a dependency on the fourth job
+# job_id5=$(sbatch --dependency=afterok:$job_id4 --parsable SLURM_yearly_postproc.run $BASIN $RUN_ID $TEST_FLAG)
+
+#submit the 6th job with a dependency on the fifth job 
+# job_id6=$(sbatch --dependency=afterok:$job_id4 --parsable SLURM_transfer_outputs.run $BASIN $RUN_ID)
+job_id6=$(sbatch --dependency=afterok:$job_id4 --parsable SLURM_rsync_year.run $BASIN $RUN_ID)
+job_id7=$(sbatch --dependency=afterok:$job_id4 --parsable SLURM_rsync_rest.run $BASIN $RUN_ID)
+
+echo "All jobs submitted with dependencies. "

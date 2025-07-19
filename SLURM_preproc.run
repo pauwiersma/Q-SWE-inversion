@@ -1,0 +1,46 @@
+#!/bin/bash -l
+
+#SBATCH --job-name=preproc
+#SBATCH --mail-user pau.wiersma@unil.ch
+#SBATCH --mail-type=NONE #you can write FAIL, ALL, NONE, 
+
+#SBATCH --output=./slurm_output/%x_%j.out
+#SBATCH --error=./slurm_errors/%x_%j.err
+#SBATCH --nodes 1
+#SBATCH --ntasks 1
+#SBATCH --cpus-per-task 1
+#SBATCH --time 00:10:00
+#SBATCH --mem 8129M 
+#SBATCH --partition cpu
+#SBATCH --chdir /work/FAC/FGSE/IDYST/gmariet1/gaia/pwiersma/scripts/ewc
+#SBATCH --export NONE #to make sure you always load everything you need here
+
+module purge #not really necessary if you have --export NONE
+# dcsrsoft use 20241118
+# module load openmpi
+dcsrsoft use 20240303
+module load mvapich2
+module load python
+module load micromamba
+
+micromamba activate newcondatest
+#For mpiruns: make sure the environmnet here is passed to the nodes 
+export SLURM_EXPORT_ENV=ALL
+
+export EWC_RUNDIR=/work/FAC/FGSE/IDYST/gmariet1/gaia/pwiersma/scripts/ewc
+export EWC_ROOTDIR=/work/FAC/FGSE/IDYST/gmariet1/gaia/pwiersma/ewatercycle
+
+
+
+BASIN=$1
+RUN_ID=$2
+TEST_FLAG=$3
+
+echo "Running preproc of $BASIN $RUN_ID "
+# srun --cpu-bind=none 
+python preproc.py $BASIN $RUN_ID --test $TEST_FLAG
+# srun -n 1 -c 2 -T 2 python preproc.py Dischma $RUN_ID --test
+# srun --cpus-per-task=2 python preproc.py Dischma $RUN_ID --test
+# --ntasks=2
+# python preproc.py Dischma $RUN_ID --test
+# -mpi=pmi2 

@@ -1,0 +1,40 @@
+#!/bin/bash -l
+#SBATCH --job-name=rsync_rest
+#SBATCH --output=./slurm_output/%x_%j.out
+#SBATCH --error=./slurm_errors/%x_%j.err
+#SBATCH --time=02:00:00
+#SBATCH --mem=4G
+#SBATCH --partition=cpu
+#SBATCH --nodes=1
+#SBATCH --cpus-per-task=1
+
+# This script transfers all non-yearly data including configuration files
+
+# Variables
+BASIN=$1
+RUN_ID=$2
+SOURCE_FOLDER="$EWC_ROOTDIR/outputs/$RUN_ID"
+REMOTE_USER="pwiersma"
+REMOTE_HOST="mercury.gaia.unil.ch"
+REMOTE_PATH="/home/pwiersma/scratch/Data/ewatercycle"
+
+# Ensure remote directory exists
+ssh "$REMOTE_USER@$REMOTE_HOST" "mkdir -p $REMOTE_PATH/outputs/$RUN_ID"
+
+# Transfer all non-Yearlycalib files
+echo "Transferring all non-Yearlycalib files"
+rsync -az --info=progress2 --exclude="Yearlycalib" "$SOURCE_FOLDER/" "$REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH/outputs/$RUN_ID/"
+
+# Transfer container directory
+CONTAINER_DIR="$EWC_ROOTDIR/experiments/containers/$RUN_ID"
+echo "Cleaning up container directory: $CONTAINER_DIR"
+rm -rf "$CONTAINER_DIR"/*prior* "$CONTAINER_DIR"/*posterior* "$CONTAINER_DIR"/*sample* 2>/dev/null || true
+
+echo "Transferring container directory"
+rsync -az --info=progress2 "$CONTAINER_DIR/" "$REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH/experiments/containers/$RUN_ID/"
+
+# Transfer config file
+echo "Transferring config file"
+rsync -az "$EWC_ROOTDIR/experiments/config_files/${RUN_ID}_config.json" "$REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH/experiments/config_files/"
+
+echo "All remaining transfers completed successfully"

@@ -1,0 +1,62 @@
+#!/bin/bash -l
+#SBATCH --job-name=yearly_compute
+#SBATCH --mail-user pau.wiersma@unil.ch
+#SBATCH --mail-type=ALL #you can write FAIL, ALL, NONE, 
+
+#SBATCH --output=./slurm_output/%x_%A_%a.out
+#SBATCH --error=./slurm_errors/%x_%A_%a.err
+
+#SBATCH --time=01:30:00
+#SBATCH --array=1,14#0-21
+#SBATCH --ntasks=10
+
+# SBATCH --time=00:10:00
+# SBATCH --array=0-1
+# SBATCH --ntasks=4
+
+#SBATCH --mem=16G
+#SBATCH --partition=cpu
+#SBATCH --nodes 1
+
+#SBATCH --cpus-per-task=1
+#SBATCH --chdir /work/FAC/FGSE/IDYST/gmariet1/gaia/pwiersma/scripts/ewc
+
+export EWC_RUNDIR=/work/FAC/FGSE/IDYST/gmariet1/gaia/pwiersma/scripts/ewc
+export EWC_ROOTDIR=/work/FAC/FGSE/IDYST/gmariet1/gaia/pwiersma/ewatercycle
+
+module purge #not really necessary if you have --export NONE
+# dcsrsoft use 20241118
+# module load openmpi
+
+dcsrsoft use 20240303
+dcsrsoft show 
+module load mvapich2
+module load python
+module load micromamba
+
+source ~/.bashrc
+micromamba activate newcondatest
+
+#For mpiruns: make sure the environmnet here is passed to the nodes 
+export SLURM_EXPORT_ENV=ALL
+
+BASIN=$1
+RUN_ID=$2
+TEST_FLAG=$3
+
+# config_dir=/scratch/pwiersma/ewatercycle/experiments/config_files/${RUN_ID}_config.json
+config_dir=/work/FAC/FGSE/IDYST/gmariet1/gaia/pwiersma/ewatercycle/experiments/config_files/${RUN_ID}_config.json
+
+# IN=$(sed -n ${SLURM_ARRAY_TASK_ID}p in.list)
+echo "Running analysis on $SLURM_ARRAY_TASK_ID" with RUN_ID $RUN_ID on basin $BASIN
+
+
+srun --cpu-bind=none python yearly_compute.py $BASIN $config_dir $SLURM_ARRAY_TASK_ID --test $TEST_FLAG
+# srun -n 4 python yearly_compute.py Dischma $config_dir $SLURM_ARRAY_TASK_ID --test $TEST_FLAG
+
+# python compute.py Dischma $config_dir $SLURM_ARRAY_TASK_ID --test
+# srun --mpi=pmi2 -n 1 -c 2 -T 2 python compute.py Dischma $config_dir $SLURM_ARRAY_TASK_ID --test
+# srun -n 1 -c 2 python compute.py Dischma $config_dir $SLURM_ARRAY_TASK_ID --test
+
+
+echo "Job $SLURM_ARRAY_JOB_ID, task $SLURM_ARRAY_TASK_ID completed"

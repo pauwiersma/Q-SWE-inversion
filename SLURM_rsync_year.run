@@ -1,0 +1,37 @@
+#!/bin/bash -l
+#SBATCH --job-name=rsync_year
+#SBATCH --output=./slurm_output/%x_%A_%a.out
+#SBATCH --error=./slurm_errors/%x_%A_%a.err
+#SBATCH --time=02:00:00
+#SBATCH --mem=4G
+#SBATCH --partition=cpu
+#SBATCH --array=2004,2012 #2001-2022
+#SBATCH --nodes=1
+#SBATCH --cpus-per-task=1
+
+# This script transfers one year of calibration data in parallel using rsync
+
+# Variables
+BASIN=$1
+RUN_ID=$2
+YEAR=${SLURM_ARRAY_TASK_ID}
+SOURCE_FOLDER="$EWC_ROOTDIR/outputs/$RUN_ID"
+YEARLY_FOLDER="$SOURCE_FOLDER/Yearlycalib/$YEAR"
+REMOTE_USER="pwiersma"
+REMOTE_HOST="mercury.gaia.unil.ch"
+REMOTE_PATH="/home/pwiersma/scratch/Data/ewatercycle"
+
+# Skip if year directory doesn't exist
+if [ ! -d "$YEARLY_FOLDER" ]; then
+    echo "Directory for year $YEAR does not exist, skipping."
+    exit 0
+fi
+
+# Ensure remote directory exists
+ssh "$REMOTE_USER@$REMOTE_HOST" "mkdir -p $REMOTE_PATH/outputs/$RUN_ID/Yearlycalib/$YEAR"
+
+# Transfer the year directory using rsync
+echo "Transferring year $YEAR data with rsync"
+rsync -az --info=progress2 "$YEARLY_FOLDER/" "$REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH/outputs/$RUN_ID/Yearlycalib/$YEAR/"
+
+echo "Transfer of year $YEAR completed"
